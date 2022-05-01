@@ -34,7 +34,7 @@ class Person
         $output['contact'] = $this->getContactInfo($id, $locale);
         $output['personal'] = $this->getPersonalInfo($id, $locale);
         $output['work'] = $this->getWorkInfo($id, $locale);
-        $output['social_networks'] = $this->getSocialNetworks($id);
+        $output['socialNetworks'] = $this->getSocialNetworks($id);
         $output['education'] = $this->getEducationInfo($id, $locale);
         $output['companies'] = $this->getCompaniesInfo($id, $locale);
         $output['projects'] = $this->getProjectsInfo($id, $locale);
@@ -352,7 +352,7 @@ class Person
             $res['title'] = $row['title'];
             $res['subtitle'] = $row['subtitle'];
             $res['description'] = $row['description'];
-            $res['pictures'] = explode('*', $row['pictures']);
+            $res['portions'] = $this->getPortfolioPortions($row['portfolio_id'], $locale);
 
             $output[] = $res;
         }
@@ -382,7 +382,37 @@ class Person
             $res['title'] = $row['title'];
             $res['subtitle'] = $row['subtitle'];
             $res['description'] = $row['description'];
-            $res['pictures'] = explode('*', $row['pictures']);
+            $res['portions'] = $this->getPortfolioPortions($row['portfolio_id'], $locale);
+
+            $output[] = $res;
+        }
+
+        mysqli_close($conn);
+        return $output;
+    }
+
+    private function getPortfolioPortions($id, $locale)
+    {
+        $output = array();
+        $connectObject = new Connection;
+        $conn = $connectObject->connectToDatabase();
+
+        $sql = "CALL sp_select_portfolio_portions('$id','$locale')";
+
+        $resp = mysqli_query($conn, $sql);
+
+        while ($row = mysqli_fetch_assoc($resp)) {
+            $res = array();
+
+            $res['title'] = $row['title'];
+            $res['description'] = $row['description'];
+            if ($row['pictures'] != "")
+                $res['pictures'] = explode('*', $row['pictures']);
+            else
+                $res['pictures'] = [];
+            $res['link'] = $row['link'];
+            $res['source'] = $row['source'];
+            $res['locale'] = $row['locale'];
 
             $output[] = $res;
         }
